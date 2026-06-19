@@ -80,8 +80,11 @@ function startGame() {
 // ---------- Sélections donne ----------
 function selectAttacker(t) {
   draft.attacker = t;
+  const n = names();
   document.getElementById('att-a').className = 'seg' + (t === 'a' ? ' on-soft' : '');
+  document.getElementById('att-a').textContent = n.a;
   document.getElementById('att-b').className = 'seg' + (t === 'b' ? ' on-soft' : '');
+  document.getElementById('att-b').textContent = n.b;
   refreshPreview();
 }
 function selectContract(v) {
@@ -100,9 +103,12 @@ function selectCoinche(m) {
 }
 function selectBelote(t) {
   draft.belote = t;
+  const n = names();
   document.getElementById('bel-none').className = 'seg' + (t === null ? ' on' : '');
   document.getElementById('bel-a').className = 'seg' + (t === 'a' ? ' on' : '');
+  document.getElementById('bel-a').textContent = n.a;
   document.getElementById('bel-b').className = 'seg' + (t === 'b' ? ' on' : '');
+  document.getElementById('bel-b').textContent = n.b;
   refreshPreview();
 }
 function setPts(v) {
@@ -206,8 +212,11 @@ function validateRound() {
 
 function newRound() {
   draft = { attacker: null, contract: null, coinche: 1, belote: null, pts: 90 };
+  const n = names();
   document.getElementById('att-a').className = 'seg';
+  document.getElementById('att-a').textContent = n.a;
   document.getElementById('att-b').className = 'seg';
+  document.getElementById('att-b').textContent = n.b;
   document.querySelectorAll('#contract-row .seg').forEach(c => c.className = 'seg');
   selectCoinche(1);
   selectBelote(null);

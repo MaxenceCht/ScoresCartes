@@ -51,11 +51,13 @@ function showScreen(s) {
 // ---------- Sélections ----------
 function setKind(k) {
   draft.kind = k;
+  const n = names();
   document.getElementById('kind-normal').className = 'seg' + (k === 'normal' ? ' on' : '');
   document.getElementById('kind-capot').className = 'seg' + (k === 'capot' ? ' on' : '');
   document.getElementById('normal-block').style.display = k === 'normal' ? 'block' : 'none';
   document.getElementById('capot-block').style.display = k === 'capot' ? 'block' : 'none';
-  document.getElementById('der-block').style.display = k === 'capot' ? 'none' : 'block';
+  document.getElementById('capot-a').textContent = n.a;
+  document.getElementById('capot-b').textContent = n.b;
   document.getElementById('litige-block').style.display = 'none';
   refreshPreview();
 }
@@ -64,38 +66,41 @@ function selectWho(t) {
   draft.who = t;
   const n = names();
   document.getElementById('who-a').className = 'seg' + (t === 'a' ? ' on' : '');
+  document.getElementById('who-a').textContent = n.a;
   document.getElementById('who-b').className = 'seg' + (t === 'b' ? ' on' : '');
+  document.getElementById('who-b').textContent = n.b;
   document.getElementById('derived-team').textContent = n[t === 'a' ? 'b' : 'a'];
   refreshPreview();
 }
 
 function selectCapot(t) {
   draft.capotTeam = t;
+  const n = names();
   document.getElementById('capot-a').className = 'seg' + (t === 'a' ? ' on' : '');
+  document.getElementById('capot-a').textContent = n.a;
   document.getElementById('capot-b').className = 'seg' + (t === 'b' ? ' on' : '');
+  document.getElementById('capot-b').textContent = n.b;
   refreshPreview();
 }
 
 function selectBelote(t) {
   draft.belote = t;
+  const n = names();
   document.getElementById('bel-none').className = 'seg' + (t === null ? ' on' : '');
   document.getElementById('bel-a').className = 'seg' + (t === 'a' ? ' on' : '');
+  document.getElementById('bel-a').textContent = n.a;
   document.getElementById('bel-b').className = 'seg' + (t === 'b' ? ' on' : '');
-  refreshPreview();
-}
-
-function selectDer(t) {
-  draft.der = t;
-  document.getElementById('der-none').className = 'seg' + (t === null ? ' on' : '');
-  document.getElementById('der-a').className = 'seg' + (t === 'a' ? ' on' : '');
-  document.getElementById('der-b').className = 'seg' + (t === 'b' ? ' on' : '');
+  document.getElementById('bel-b').textContent = n.b;
   refreshPreview();
 }
 
 function selectLitige(t) {
   draft.litigeDef = t;
+  const n = names();
   document.getElementById('lit-a').className = 'seg' + (t === 'a' ? ' on' : '');
+  document.getElementById('lit-a').textContent = n.a;
   document.getElementById('lit-b').className = 'seg' + (t === 'b' ? ' on' : '');
+  document.getElementById('lit-b').textContent = n.b;
   refreshPreview();
 }
 
@@ -135,20 +140,18 @@ function compute() {
   const pts = { a: 0, b: 0 };
   pts[draft.who] = draft.pts;
   pts[draft.who === 'a' ? 'b' : 'a'] = 162 - draft.pts;
-  const da = draft.der === 'a' ? 10 : 0;
-  const db = draft.der === 'b' ? 10 : 0;
 
   const isLitige = pts.a === 81 && pts.b === 81;
   if (isLitige) {
     if (!draft.litigeDef) return { incomplete: 'litige' };
     const attacker = draft.litigeDef === 'a' ? 'b' : 'a';
-    let rA = (draft.litigeDef === 'a' ? 81 : 0) + ba + da;
-    let rB = (draft.litigeDef === 'b' ? 81 : 0) + bb + db;
+    let rA = (draft.litigeDef === 'a' ? 81 : 0) + ba;
+    let rB = (draft.litigeDef === 'b' ? 81 : 0) + bb;
     return { roundA: rA, roundB: rB, note: 'Litige — 81 en attente', isLitige: true, isCapotRound: false, label: 'Litige', attacker };
   }
 
-  let rA = pts.a + ba + da;
-  let rB = pts.b + bb + db;
+  let rA = pts.a + ba;
+  let rB = pts.b + bb;
   let note = '';
   if (state.pendingLitige !== null) {
     const winner = pts.a > pts.b ? 'a' : pts.b > pts.a ? 'b' : null;
@@ -169,6 +172,11 @@ function refreshPreview() {
   // Détection litige en direct
   const litigeNow = draft.kind === 'normal' && draft.pts === 81;
   document.getElementById('litige-block').style.display = litigeNow ? 'block' : 'none';
+  if (litigeNow) {
+    const nl = names();
+    document.getElementById('lit-a').textContent = nl.a;
+    document.getElementById('lit-b').textContent = nl.b;
+  }
 
   const res = compute();
   const stateEl = document.getElementById('preview-state');
@@ -224,11 +232,10 @@ function validateRound() {
 
 // ---------- Nouvelle donne ----------
 function newRound() {
-  draft = { kind: 'normal', who: 'a', pts: 81, capotTeam: null, belote: null, der: null, litigeDef: null };
+  draft = { kind: 'normal', who: 'a', pts: 81, capotTeam: null, belote: null, litigeDef: null };
   setKind('normal');
   selectWho('a');
   selectBelote(null);
-  selectDer(null);
   document.getElementById('lit-a').className = 'seg';
   document.getElementById('lit-b').className = 'seg';
   document.getElementById('capot-a').className = 'seg';
@@ -321,7 +328,6 @@ function esc(s) {
 load();
 selectWho('a');
 selectBelote(null);
-selectDer(null);
 setKind('normal');
 setPts(81);
 // Si une partie est en cours, on arrive directement sur le tableau
