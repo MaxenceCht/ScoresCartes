@@ -8,15 +8,15 @@ let state = {
   rounds: [],
   totalA: 0,
   totalB: 0,
-  pendingLitige: null,   // 'a' | 'b' | null — équipe dont les 81 pts sont en attente
+  pendingLitige: null,   // 'a' | 'b' | null
   nameA: 'Nous',
   nameB: 'Eux',
   target: 1000
 };
 
 let draft = {
-  taker: null,       // 'a' | 'b' — qui a pris
-  who: 'a',          // équipe dont on saisit les points
+  taker: null,
+  who: 'a',
   pts: 81,
   capot: false,
   capotTeam: null,
@@ -36,12 +36,11 @@ function load() {
 
 function names() { return { a: state.nameA || 'Nous', b: state.nameB || 'Eux' }; }
 
-// ---------- Navigation écrans ----------
+// ---------- Navigation ----------
 function showScreen(s) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.getElementById('screen-' + s).classList.add('active');
   window.scrollTo(0, 0);
-  if (s === 'scores') renderScores();
   if (s === 'end') renderEnd();
 }
 
@@ -115,13 +114,12 @@ function setPts(v) {
 function bumpPts(d) { setPts(draft.pts + d); }
 function onRange(v) { setPts(v); }
 
-// ---------- Calcul d'une donne ----------
+// ---------- Calcul ----------
 function compute() {
   const n = names();
   const ba = draft.belote === 'a' ? 20 : 0;
   const bb = draft.belote === 'b' ? 20 : 0;
 
-  // --- Capot ---
   if (draft.capot) {
     if (!draft.capotTeam) return null;
     let rA = (draft.capotTeam === 'a' ? 250 : 0) + ba;
@@ -134,7 +132,6 @@ function compute() {
     return { roundA: rA, roundB: rB, note, isLitige: false, isDedans: false, isCapotRound: true, label: 'Capot' };
   }
 
-  // --- Normal ---
   if (!draft.taker) return null;
 
   const pts = { a: 0, b: 0 };
@@ -145,9 +142,8 @@ function compute() {
   const taker = draft.taker;
   const def = taker === 'a' ? 'b' : 'a';
 
-  // --- Litige : scores effectifs égaux ---
+  // Litige : scores effectifs égaux
   if (eff.a === eff.b) {
-    // Le défenseur (non-preneur) reçoit 81 pts ; les 81 du preneur restent en attente
     let rA = (def === 'a' ? 81 : 0) + ba;
     let rB = (def === 'b' ? 81 : 0) + bb;
     return {
@@ -158,7 +154,7 @@ function compute() {
     };
   }
 
-  // --- Dedans : le preneur fait strictement moins que le défenseur ---
+  // Dedans : le preneur fait strictement moins
   if (eff[taker] < eff[def]) {
     let rA = (def === 'a' ? 162 : 0) + ba;
     let rB = (def === 'b' ? 162 : 0) + bb;
@@ -170,7 +166,7 @@ function compute() {
     return { roundA: rA, roundB: rB, note, isLitige: false, isDedans: true, isCapotRound: false, label: n[taker] + ' dedans' };
   }
 
-  // --- Victoire normale du preneur ---
+  // Victoire normale
   let rA = pts.a + ba;
   let rB = pts.b + bb;
   let note = '';
@@ -195,53 +191,20 @@ function refreshPreview() {
     stateEl.style.color = 'var(--muted)';
     document.getElementById('pd-a').textContent = '—';
     document.getElementById('pd-b').textContent = '—';
-    renderMiniHistory();
     return;
   }
 
-  const stateLabel = res.isCapotRound ? 'Capot' : res.isLitige ? 'Litige' : res.isDedans ? 'Dedans' : 'Manche';
-  stateEl.textContent = stateLabel;
+  const label = res.isCapotRound ? 'Capot' : res.isLitige ? 'Litige' : res.isDedans ? 'Dedans' : 'Manche';
+  stateEl.textContent = label;
   stateEl.style.color = res.isLitige ? 'var(--gold)' : res.isDedans ? 'var(--bad)' : 'var(--ok)';
   setDelta('pd-a', res.roundA);
   setDelta('pd-b', res.roundB);
-  renderMiniHistory();
 }
 
 function setDelta(id, v) {
   const el = document.getElementById(id);
   el.textContent = '+' + v;
   el.className = 'preview-delta ' + (v > 0 ? 'delta-pos' : 'delta-zero');
-}
-
-function renderMiniHistory() {
-  const el = document.getElementById('mini-history');
-  if (!el) return;
-  if (state.rounds.length === 0) { el.innerHTML = ''; return; }
-  const n = names();
-  const rows = [...state.rounds].reverse().map((r, ri) => {
-    const i = state.rounds.length - 1 - ri;
-    const tag = r.isCapotRound ? '🃏 ' : r.isLitige ? '⚖️ ' : '';
-    const chipA = `<span class="histo-chip ${r.roundA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundA}</span>`;
-    const chipB = `<span class="histo-chip ${r.roundB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundB}</span>`;
-    return `<div class="histo-item">
-      <span class="histo-n">${i + 1}</span>
-      <div class="histo-body">
-        <div class="histo-head">${tag}${esc(r.label || '')}</div>
-        ${r.note ? `<div class="histo-sub">${esc(r.note)}</div>` : ''}
-      </div>
-      <div class="histo-chips">${chipA}${chipB}</div>
-    </div>`;
-  }).join('');
-  el.innerHTML =
-    `<div style="border-top:1px solid #E5DCC8;margin:12px 0 8px;"></div>` +
-    `<div class="kicker" style="margin-bottom:6px;">Donnes précédentes</div>` +
-    rows +
-    `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 4px 2px;border-top:1px solid #E5DCC8;margin-top:4px;">` +
-    `<span style="font-size:13px;font-weight:700;color:var(--ink-soft);">${esc(n.a)}</span>` +
-    `<span style="font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;">${state.totalA}</span>` +
-    `<span style="font-size:13px;font-weight:700;color:var(--ink-soft);">${esc(n.b)}</span>` +
-    `<span style="font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;">${state.totalB}</span>` +
-    `</div>`;
 }
 
 // ---------- Validation ----------
@@ -259,12 +222,7 @@ function validateRound() {
 
   state.totalA += res.roundA;
   state.totalB += res.roundB;
-
-  if (res.isLitige) {
-    state.pendingLitige = res.takerTeam;
-  } else {
-    state.pendingLitige = null;
-  }
+  state.pendingLitige = res.isLitige ? res.takerTeam : null;
 
   state.rounds.push({
     roundA: res.roundA, roundB: res.roundB,
@@ -274,10 +232,11 @@ function validateRound() {
   });
 
   save();
-  showScreen('scores');
+  renderScores();
+  newRound();
 }
 
-// ---------- Nouvelle donne ----------
+// ---------- Reset formulaire + round suivant ----------
 function newRound() {
   draft = { taker: null, who: 'a', pts: 81, capot: false, capotTeam: null, belote: null };
 
@@ -300,32 +259,21 @@ function newRound() {
   document.getElementById('err').textContent = '';
   document.getElementById('pending-litige-banner').style.display = state.pendingLitige !== null ? 'block' : 'none';
   document.getElementById('round-no').textContent = 'Donne n°' + (state.rounds.length + 1);
-  showScreen('round');
+  window.scrollTo(0, 0);
 }
 
-// ---------- Rendu scores ----------
+// ---------- Rendu tableau ----------
 function renderScores() {
   const n = names();
-  const lead = state.totalA === state.totalB ? null : (state.totalA > state.totalB ? 'a' : 'b');
-  const max = Math.max(state.totalA, state.totalB, 1);
-  const data = [
-    { key: 'a', name: n.a, score: state.totalA },
-    { key: 'b', name: n.b, score: state.totalB }
-  ].sort((x, y) => y.score - x.score);
+  const isALead = state.totalA > state.totalB;
+  const isBLead = state.totalB > state.totalA;
 
-  document.getElementById('standings').innerHTML = data.map((d, i) => {
-    const isLead = lead === d.key;
-    return `<div class="standing">
-      <span class="rank ${isLead ? 'leader' : ''}">${i + 1}</span>
-      <div class="standing-body">
-        <div class="standing-top">
-          <span class="standing-name">${esc(d.name)}</span>
-          <span class="standing-score">${d.score}</span>
-        </div>
-        <div class="bar"><div class="bar-fill ${isLead ? 'leader' : ''}" style="width:${Math.round(d.score / max * 100)}%"></div></div>
-      </div>
-    </div>`;
-  }).join('');
+  document.getElementById('card-lbl-a').textContent = n.a;
+  document.getElementById('card-lbl-b').textContent = n.b;
+  document.getElementById('score-a').textContent = state.totalA;
+  document.getElementById('score-b').textContent = state.totalB;
+  document.getElementById('card-a').className = 'score-card' + (isALead ? ' lead' : '');
+  document.getElementById('card-b').className = 'score-card' + (isBLead ? ' lead' : '');
 
   const hist = document.getElementById('history');
   const empty = document.getElementById('history-empty');
@@ -372,6 +320,8 @@ function renderEnd() {
 function restart() {
   state.rounds = []; state.totalA = 0; state.totalB = 0; state.pendingLitige = null;
   save();
+  showScreen('main');
+  renderScores();
   newRound();
 }
 
@@ -381,8 +331,5 @@ function esc(s) {
 
 // ---------- Init ----------
 load();
-if (state.rounds.length > 0) {
-  showScreen('scores');
-} else {
-  newRound();
-}
+renderScores();
+newRound();
