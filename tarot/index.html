@@ -10,6 +10,9 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="../site.webmanifest">
 <link rel="stylesheet" href="../css/common.css" />
+<style>
+  .section-sep { border: none; border-top: 1.5px solid var(--line); margin: 22px 0; }
+</style>
 </head>
 <body data-game="tarot">
 <div class="frame">
@@ -41,15 +44,15 @@
     </div>
   </div>
 
-  <!-- ROUND -->
-  <div class="screen" id="screen-round">
+  <!-- ÉCRAN PRINCIPAL (saisie + scores) -->
+  <div class="screen" id="screen-main">
     <div class="screen-pad">
-      <div class="topbar">
-        <button class="icon-btn" onclick="backFromRound()">‹</button>
+      <div class="topbar spread">
         <div>
-          <div class="kicker">Tarot · Manche</div>
+          <div class="kicker">Tarot</div>
           <div class="title-h" id="round-no">Donne n°1</div>
         </div>
+        <a class="icon-btn" href="../">⌂</a>
       </div>
 
       <div class="group">
@@ -142,27 +145,19 @@
 
       <div class="err" id="err"></div>
       <button class="btn-primary" onclick="validateRound()">Valider la donne</button>
-    </div>
-  </div>
 
-  <!-- SCORES -->
-  <div class="screen" id="screen-scores">
-    <div class="screen-pad">
-      <div class="topbar spread">
-        <div>
-          <div class="kicker">Tarot</div>
-          <div class="title-h">Tableau des scores</div>
-        </div>
-        <a class="icon-btn" href="../">⌂</a>
-      </div>
+      <!-- ───── Tableau des scores ───── -->
+      <hr class="section-sep" />
+
       <div class="standings" id="standings"></div>
-      <div class="group-label" style="margin:24px 4px 4px;">Donnes jouées</div>
+
+      <div class="group-label" style="margin:6px 4px 4px;">Donnes jouées</div>
       <div id="history"></div>
       <div class="empty" id="history-empty">Aucune donne enregistrée pour l'instant.</div>
+
       <div class="spacer"></div>
-      <div class="btn-row">
+      <div class="btn-row" style="margin-top:16px;">
         <button class="btn-outline" onclick="goEnd()">Terminer</button>
-        <button class="btn-primary" style="margin-top:0;" onclick="newRound()">Nouvelle donne</button>
       </div>
     </div>
   </div>
@@ -180,7 +175,7 @@
         <div class="end-list" id="end-list"></div>
         <div style="width:100%; margin-top:30px; display:flex; flex-direction:column; gap:10px;">
           <button class="btn-gold" onclick="restart()">Rejouer une partie</button>
-          <button class="btn-ghost-light" onclick="showScreen('scores')">Revoir le tableau</button>
+          <button class="btn-ghost-light" onclick="showScreen('main')">Revoir le tableau</button>
           <a class="btn-text-light" href="../" style="text-align:center; text-decoration:none; display:block;">Changer de jeu</a>
         </div>
       </div>

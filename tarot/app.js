@@ -25,7 +25,7 @@ function showScreen(s) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.getElementById('screen-' + s).classList.add('active');
   window.scrollTo(0, 0);
-  if (s === 'scores') renderScores();
+  if (s === 'main') renderScores();
   if (s === 'end') renderEnd();
 }
 
@@ -189,7 +189,8 @@ function validateRound() {
   res.deltas.forEach((d, i) => state.totals[i] += d);
   state.donnes.push({ deltas: res.deltas.slice(), head: res.head, success: res.success });
   save();
-  showScreen('scores');
+  renderScores();
+  newRound();
 }
 
 function newRound() {
@@ -203,12 +204,12 @@ function newRound() {
   setPts(48);
   document.getElementById('err').textContent = '';
   document.getElementById('round-no').textContent = 'Donne n°' + (state.donnes.length + 1);
-  showScreen('round');
+  showScreen('main');
+  window.scrollTo(0, 0);
 }
 
 function backFromRound() {
-  if (state.donnes.length > 0) showScreen('scores');
-  else showScreen('setup');
+  showScreen('setup');
 }
 
 // ---------- Rendu scores ----------
@@ -227,9 +228,16 @@ function renderScores() {
   if (state.donnes.length === 0) { hist.innerHTML = ''; empty.style.display = 'block'; }
   else {
     empty.style.display = 'none';
-    hist.innerHTML = [...state.donnes].reverse().map((d, ri) => {
+    const running = new Array(state.playerCount).fill(0);
+    const withSnaps = state.donnes.map(d => {
+      d.deltas.slice(0, state.playerCount).forEach((v, i) => running[i] += v);
+      return { ...d, snap: [...running] };
+    });
+    hist.innerHTML = [...withSnaps].reverse().map((d, ri) => {
       const i = state.donnes.length - 1 - ri;
-      const chips = d.deltas.map(v => `<span class="histo-chip ${v >= 0 ? 'delta-pos' : 'delta-neg'}">${v > 0 ? '+' : ''}${v}</span>`).join('');
+      const chips = d.deltas.slice(0, state.playerCount).map((v, pi) =>
+        `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${v >= 0 ? 'delta-pos' : 'delta-neg'}">${v > 0 ? '+' : ''}${v}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${d.snap[pi]}</span></div>`
+      ).join('');
       return `<div class="histo-item"><span class="histo-n">${i + 1}</span><div class="histo-body"><div class="histo-head">${d.success ? '' : '✗ '}${esc(d.head || '')}</div><div class="histo-sub">${d.success ? 'Gagné' : 'Perdu'}</div></div><div class="histo-chips">${chips}</div></div>`;
     }).join('');
   }
@@ -260,7 +268,7 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
   renderPlayerChips();
   if (state.started && state.donnes.length > 0) {
     document.getElementById('round-no').textContent = 'Donne n°' + (state.donnes.length + 1);
-    showScreen('scores');
+    showScreen('main');
   } else if (state.started) {
     newRound();
   } else {

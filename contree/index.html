@@ -10,6 +10,30 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="../site.webmanifest">
 <link rel="stylesheet" href="../css/common.css" />
+<style>
+  .score-cards { display: flex; gap: 10px; margin-bottom: 16px; }
+  .score-card {
+    flex: 1; background: #fff; border: 2px solid var(--line);
+    border-radius: 20px; padding: 16px 12px; text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .score-card.lead {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 6%, #fff);
+  }
+  .score-card .lbl {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted-2);
+  }
+  .score-card.lead .lbl { color: var(--accent); }
+  .score-card .val {
+    font-family: 'DM Serif Display', serif; font-size: 56px;
+    color: var(--ink); line-height: 1.05; margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-card.lead .val { color: var(--accent); }
+  .section-sep { border: none; border-top: 1.5px solid var(--line); margin: 22px 0; }
+</style>
 </head>
 <body data-game="contree">
 <div class="frame">
@@ -74,15 +98,15 @@
     </div>
   </div>
 
-  <!-- ÉCRAN SAISIE -->
-  <div class="screen" id="screen-round">
+  <!-- ÉCRAN PRINCIPAL (saisie + scores) -->
+  <div class="screen" id="screen-main">
     <div class="screen-pad">
-      <div class="topbar">
-        <button class="icon-btn" onclick="backFromRound()">‹</button>
+      <div class="topbar spread">
         <div>
-          <div class="kicker">Contrée · Manche</div>
+          <div class="kicker">Contrée</div>
           <div class="title-h" id="round-no">Donne n°1</div>
         </div>
+        <a class="icon-btn" href="../">⌂</a>
       </div>
 
       <div class="group">
@@ -147,31 +171,33 @@
 
       <div class="err" id="err"></div>
       <button class="btn-primary" onclick="validateRound()">Valider la donne</button>
-    </div>
-  </div>
 
-  <!-- ÉCRAN SCORES -->
-  <div class="screen" id="screen-scores">
-    <div class="screen-pad">
-      <div class="topbar spread">
-        <div>
-          <div class="kicker">Contrée</div>
-          <div class="title-h">Tableau des scores</div>
+      <!-- ───── Tableau des scores ───── -->
+      <hr class="section-sep" />
+
+      <div class="score-cards">
+        <div class="score-card" id="card-a">
+          <div class="lbl" id="card-lbl-a">Nous</div>
+          <div class="val" id="score-a">0</div>
         </div>
-        <a class="icon-btn" href="../">⌂</a>
+        <div class="score-card" id="card-b">
+          <div class="lbl" id="card-lbl-b">Eux</div>
+          <div class="val" id="score-b">0</div>
+        </div>
       </div>
+
       <div class="banner-win" id="banner-win" style="display:none;">
         <span style="font-size:18px;">🏁</span>
         <span class="txt">Objectif atteint — vous pouvez terminer la partie.</span>
       </div>
-      <div class="standings" id="standings"></div>
-      <div class="group-label" style="margin:24px 4px 4px;">Donnes jouées</div>
+
+      <div class="group-label" style="margin:6px 4px 4px;">Donnes jouées</div>
       <div id="history"></div>
       <div class="empty" id="history-empty">Aucune donne enregistrée pour l'instant.</div>
+
       <div class="spacer"></div>
-      <div class="btn-row">
+      <div class="btn-row" style="margin-top:16px;">
         <button class="btn-outline" onclick="goEnd()">Terminer</button>
-        <button class="btn-primary" style="margin-top:0;" onclick="newRound()">Nouvelle donne</button>
       </div>
     </div>
   </div>
@@ -189,7 +215,7 @@
         <div class="end-list" id="end-list"></div>
         <div style="width:100%; margin-top:30px; display:flex; flex-direction:column; gap:10px;">
           <button class="btn-gold" onclick="restart()">Rejouer une partie</button>
-          <button class="btn-ghost-light" onclick="showScreen('scores')">Revoir le tableau</button>
+          <button class="btn-ghost-light" onclick="showScreen('main')">Revoir le tableau</button>
           <a class="btn-text-light" href="../" style="text-align:center; text-decoration:none; display:block;">Changer de jeu</a>
         </div>
       </div>

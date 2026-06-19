@@ -50,7 +50,7 @@ function showScreen(s) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.getElementById('screen-' + s).classList.add('active');
   window.scrollTo(0, 0);
-  if (s === 'scores') renderScores();
+  if (s === 'main') renderScores();
   if (s === 'end') renderEnd();
 }
 
@@ -211,7 +211,8 @@ function validateRound() {
   state.totalB += res.scoreB;
   state.rounds.push({ scoreA: res.scoreA, scoreB: res.scoreB, totalA: state.totalA, totalB: state.totalB, head: res.head, success: res.success });
   save();
-  showScreen('scores');
+  renderScores();
+  newRound();
 }
 
 function newRound() {
@@ -227,24 +228,24 @@ function newRound() {
   setPts(90);
   document.getElementById('err').textContent = '';
   document.getElementById('round-no').textContent = 'Donne n°' + (state.rounds.length + 1);
-  showScreen('round');
+  showScreen('main');
+  window.scrollTo(0, 0);
 }
 
 function backFromRound() {
-  if (state.rounds.length > 0) showScreen('scores');
-  else showScreen('setup');
+  showScreen('setup');
 }
 
 // ---------- Rendu scores ----------
 function renderScores() {
   const n = names();
   const lead = state.totalA === state.totalB ? null : (state.totalA > state.totalB ? 'a' : 'b');
-  const max = Math.max(state.totalA, state.totalB, 1);
-  const data = [{ key: 'a', name: n.a, score: state.totalA }, { key: 'b', name: n.b, score: state.totalB }].sort((x, y) => y.score - x.score);
-  document.getElementById('standings').innerHTML = data.map((d, i) => {
-    const isLead = lead === d.key;
-    return `<div class="standing"><span class="rank ${isLead ? 'leader' : ''}">${i + 1}</span><div class="standing-body"><div class="standing-top"><span class="standing-name">${esc(d.name)}</span><span class="standing-score">${d.score}</span></div><div class="bar"><div class="bar-fill ${isLead ? 'leader' : ''}" style="width:${Math.round(d.score / max * 100)}%"></div></div></div></div>`;
-  }).join('');
+  document.getElementById('card-lbl-a').textContent = n.a;
+  document.getElementById('card-lbl-b').textContent = n.b;
+  document.getElementById('score-a').textContent = state.totalA;
+  document.getElementById('score-b').textContent = state.totalB;
+  document.getElementById('card-a').className = 'score-card' + (lead === 'a' ? ' lead' : '');
+  document.getElementById('card-b').className = 'score-card' + (lead === 'b' ? ' lead' : '');
 
   const hist = document.getElementById('history');
   const empty = document.getElementById('history-empty');
@@ -253,7 +254,7 @@ function renderScores() {
     empty.style.display = 'none';
     hist.innerHTML = [...state.rounds].reverse().map((r, ri) => {
       const i = state.rounds.length - 1 - ri;
-      return `<div class="histo-item"><span class="histo-n">${i + 1}</span><div class="histo-body"><div class="histo-head">${r.success ? '' : '✗ '}${esc(r.head || '')}</div><div class="histo-sub">${r.success ? 'Contrat tenu' : 'Chute'}</div></div><div class="histo-chips"><span class="histo-chip ${r.scoreA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreA}</span><span class="histo-chip ${r.scoreB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreB}</span></div></div>`;
+      return `<div class="histo-item"><span class="histo-n">${i + 1}</span><div class="histo-body"><div class="histo-head">${r.success ? '' : '✗ '}${esc(r.head || '')}</div><div class="histo-sub">${r.success ? 'Contrat tenu' : 'Chute'}</div></div><div class="histo-chips"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreA}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalA}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreB}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalB}</span></div></div></div>`;
     }).join('');
   }
   const reached = state.target > 0 && (state.totalA >= state.target || state.totalB >= state.target);
@@ -300,7 +301,7 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
 
   if (state.started && state.rounds.length > 0) {
     document.getElementById('round-no').textContent = 'Donne n°' + (state.rounds.length + 1);
-    showScreen('scores');
+    showScreen('main');
   } else if (state.started) {
     newRound();
   } else {
