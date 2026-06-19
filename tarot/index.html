@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Tarot</title>
+<link rel="stylesheet" href="../css/common.css" />
+</head>
+<body data-game="tarot">
+<div class="frame">
+
+  <!-- SETUP -->
+  <div class="screen active" id="screen-setup">
+    <div class="screen-pad">
+      <div class="topbar">
+        <a class="icon-btn" href="../">‹</a>
+        <div>
+          <div class="kicker">Nouvelle partie</div>
+          <div class="title-h"><span class="suit-red">♥</span> Tarot</div>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Nombre de joueurs</div>
+        <div class="seg-wrap">
+          <button class="seg" id="np-3" onclick="setPlayerCount(3)">3 joueurs</button>
+          <button class="seg on" id="np-4" onclick="setPlayerCount(4)">4 joueurs</button>
+          <button class="seg" id="np-5" onclick="setPlayerCount(5)">5 joueurs</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Joueurs</div>
+        <div id="names-block"></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn-primary" onclick="startGame()">Commencer la partie</button>
+    </div>
+  </div>
+
+  <!-- ROUND -->
+  <div class="screen" id="screen-round">
+    <div class="screen-pad">
+      <div class="topbar">
+        <button class="icon-btn" onclick="backFromRound()">‹</button>
+        <div>
+          <div class="kicker">Tarot · Manche</div>
+          <div class="title-h" id="round-no">Donne n°1</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">Preneur</div>
+        <div class="seg-wrap" id="preneur-row"></div>
+      </div>
+      <div class="group" id="partner-block" style="display:none;">
+        <div class="group-label">Partenaire (roi appelé)</div>
+        <div class="seg-wrap" id="partner-row"></div>
+      </div>
+      <div class="group">
+        <div class="group-label">Contrat</div>
+        <div class="seg-wrap">
+          <button class="seg" id="ct-1" onclick="selectContract(1)">Petite</button>
+          <button class="seg" id="ct-2" onclick="selectContract(2)">Garde</button>
+          <button class="seg" id="ct-4" onclick="selectContract(4)">Garde sans</button>
+          <button class="seg" id="ct-6" onclick="selectContract(6)">Garde contre</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Bouts du preneur</div>
+        <div class="seg-wrap">
+          <button class="seg" id="bt-0" onclick="selectBouts(0)">0</button>
+          <button class="seg" id="bt-1" onclick="selectBouts(1)">1</button>
+          <button class="seg" id="bt-2" onclick="selectBouts(2)">2</button>
+          <button class="seg" id="bt-3" onclick="selectBouts(3)">3</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Points de l'attaque</div>
+        <div class="pts-box">
+          <div class="pts-main">
+            <button class="pts-step" onclick="bumpPts(-1)">−</button>
+            <div class="pts-readout">
+              <div class="pts-value" id="pts-value">48</div>
+              <div class="pts-sub" id="pts-sub">sur 91 · besoin 51</div>
+            </div>
+            <button class="pts-step" onclick="bumpPts(1)">+</button>
+          </div>
+          <input type="range" id="pts-range" min="0" max="91" value="48" oninput="onRange(this.value)" />
+          <div class="quick-row">
+            <button class="quick-btn" onclick="bumpPts(-5)">−5</button>
+            <button class="quick-btn" onclick="bumpPts(5)">+5</button>
+          </div>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Petit au bout</div>
+        <div class="seg-wrap">
+          <button class="seg on" id="pab-none" onclick="selectPab(null)">Aucun</button>
+          <button class="seg" id="pab-att" onclick="selectPab('att')">Attaque</button>
+          <button class="seg" id="pab-def" onclick="selectPab('def')">Défense</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Poignée — attaque</div>
+        <div class="seg-wrap">
+          <button class="seg on" id="pa-0" onclick="selectPoignee('att',0)">Aucune</button>
+          <button class="seg" id="pa-20" onclick="selectPoignee('att',20)">Simple</button>
+          <button class="seg" id="pa-30" onclick="selectPoignee('att',30)">Double</button>
+          <button class="seg" id="pa-40" onclick="selectPoignee('att',40)">Triple</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Poignée — défense</div>
+        <div class="seg-wrap">
+          <button class="seg on" id="pd-0" onclick="selectPoignee('def',0)">Aucune</button>
+          <button class="seg" id="pd-20" onclick="selectPoignee('def',20)">Simple</button>
+          <button class="seg" id="pd-30" onclick="selectPoignee('def',30)">Double</button>
+          <button class="seg" id="pd-40" onclick="selectPoignee('def',40)">Triple</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Chelem</div>
+        <div class="seg-wrap">
+          <button class="seg on" id="ch-0" onclick="selectChelem(0)">Aucun</button>
+          <button class="seg" id="ch-200" onclick="selectChelem(200)">Non annoncé +200</button>
+          <button class="seg" id="ch-400" onclick="selectChelem(400)">Annoncé +400</button>
+          <button class="seg" id="ch-m200" onclick="selectChelem(-200)">Chuté −200</button>
+        </div>
+      </div>
+
+      <div class="preview" id="preview">
+        <div class="preview-head">
+          <span class="kicker">Aperçu</span>
+          <span class="preview-state serif" id="preview-state">—</span>
+        </div>
+        <div id="preview-lines"></div>
+      </div>
+
+      <div class="err" id="err"></div>
+      <button class="btn-primary" onclick="validateRound()">Valider la donne</button>
+    </div>
+  </div>
+
+  <!-- SCORES -->
+  <div class="screen" id="screen-scores">
+    <div class="screen-pad">
+      <div class="topbar spread">
+        <div>
+          <div class="kicker">Tarot</div>
+          <div class="title-h">Tableau des scores</div>
+        </div>
+        <a class="icon-btn" href="../">⌂</a>
+      </div>
+      <div class="standings" id="standings"></div>
+      <div class="group-label" style="margin:24px 4px 4px;">Donnes jouées</div>
+      <div id="history"></div>
+      <div class="empty" id="history-empty">Aucune donne enregistrée pour l'instant.</div>
+      <div class="spacer"></div>
+      <div class="btn-row">
+        <button class="btn-outline" onclick="goEnd()">Terminer</button>
+        <button class="btn-primary" style="margin-top:0;" onclick="newRound()">Nouvelle donne</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div class="screen felt" id="screen-end">
+    <div class="screen-pad center-col">
+      <div class="felt-suit" style="top:60px; left:50%; transform:translateX(-50%); font-size:300px;">♦</div>
+      <div style="position:relative;" class="center-col">
+        <div class="eyebrow home-eyebrow">Partie terminée</div>
+        <div class="end-trophy">🏆</div>
+        <div class="end-winner-kicker">Vainqueur</div>
+        <div class="end-winner" id="end-winner">—</div>
+        <div class="end-winner-score" id="end-score">0 points</div>
+        <div class="end-list" id="end-list"></div>
+        <div style="width:100%; margin-top:30px; display:flex; flex-direction:column; gap:10px;">
+          <button class="btn-gold" onclick="restart()">Rejouer une partie</button>
+          <button class="btn-ghost-light" onclick="showScreen('scores')">Revoir le tableau</button>
+          <a class="btn-text-light" href="../" style="text-align:center; text-decoration:none; display:block;">Changer de jeu</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

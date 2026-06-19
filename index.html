@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="description" content="Compteur de points pour la belote, la contrée et le tarot." />
+<title>Scores</title>
+<link rel="stylesheet" href="css/common.css" />
+</head>
+<body>
+<div class="frame felt">
+  <div class="screen-pad">
+    <div class="felt-suit" style="top:120px; right:-30px; font-size:240px;">♠</div>
+    <div class="felt-suit" style="bottom:30px; left:-26px; font-size:200px;">♥</div>
+
+    <div style="position:relative;">
+      <div class="eyebrow home-eyebrow">Compteur de points</div>
+      <div class="home-title">Scores</div>
+      <div class="home-intro">Belote, contrée et tarot. Vous saisissez la donne — l'appli calcule les points.</div>
+
+      <div class="home-cards">
+        <a class="home-card" href="belote/">
+          <span class="home-card-icon"><span class="suit-dark">♣</span></span>
+          <span style="flex:1;">
+            <span class="home-card-name" style="display:block;">Belote</span>
+            <span class="home-card-sub" style="display:block;">Classique · 2 équipes · 162 pts</span>
+          </span>
+          <span class="home-card-players">4 joueurs</span>
+          <span class="home-badge" id="badge-belote" style="display:none;">en cours</span>
+        </a>
+
+        <a class="home-card" href="contree/">
+          <span class="home-card-icon"><span class="suit-dark">♠</span></span>
+          <span style="flex:1;">
+            <span class="home-card-name" style="display:block;">Contrée</span>
+            <span class="home-card-sub" style="display:block;">Annonces · coinche · 3 modes</span>
+          </span>
+          <span class="home-card-players">4 joueurs</span>
+          <span class="home-badge" id="badge-contree" style="display:none;">en cours</span>
+        </a>
+
+        <a class="home-card" href="tarot/">
+          <span class="home-card-icon"><span class="suit-red">♥</span></span>
+          <span style="flex:1;">
+            <span class="home-card-name" style="display:block;">Tarot</span>
+            <span class="home-card-sub" style="display:block;">Bouts · contrats · calcul officiel</span>
+          </span>
+          <span class="home-card-players">3 à 5 joueurs</span>
+          <span class="home-badge" id="badge-tarot" style="display:none;">en cours</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const checks = [
+  { key: 'belote-state-v1', badge: 'badge-belote', test: s => (s.rounds || []).length > 0 },
+  { key: 'contree-state-v1', badge: 'badge-contree', test: s => (s.rounds || []).length > 0 },
+  { key: 'tarot-state-v1', badge: 'badge-tarot', test: s => (s.donnes || []).length > 0 }
+];
+checks.forEach(c => {
+  try {
+    const raw = localStorage.getItem(c.key);
+    if (raw && c.test(JSON.parse(raw))) document.getElementById(c.badge).style.display = 'inline-block';
+  } catch (e) { /* ignore */ }
+});
+</script>
+</body>
+</html>
