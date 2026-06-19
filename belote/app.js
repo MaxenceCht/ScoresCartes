@@ -291,8 +291,14 @@ function renderScores() {
           <div class="histo-sub">${esc(r.note || '')}</div>
         </div>
         <div class="histo-chips">
-          <span class="histo-chip ${r.roundA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundA}</span>
-          <span class="histo-chip ${r.roundB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundB}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="histo-chip ${r.roundA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundA}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalA}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="histo-chip ${r.roundB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.roundB}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalB}</span>
+          </div>
         </div>
       </div>`;
     }).join('');
