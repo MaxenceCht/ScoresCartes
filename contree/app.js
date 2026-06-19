@@ -13,7 +13,7 @@ let state = {
   mode: 'contrat',
   nameA: 'Nous', nameB: 'Eux',
   target: 1010,
-  arrondi: false, beloteComptee: false,
+  arrondi: false, beloteComptee: false, beloteChute: true,
   targetManual: false,
   started: false
 };
@@ -32,6 +32,7 @@ function saveCfg() {
   state.target = parseInt(document.getElementById('target').value) || 0;
   state.arrondi = document.getElementById('opt-arrondi').checked;
   state.beloteComptee = document.getElementById('opt-belote').checked;
+  state.beloteChute = document.getElementById('opt-belote-chute').checked;
   save();
 }
 
@@ -140,7 +141,10 @@ function compute() {
   let success;
   if (draft.contract === 250) success = realized[defender] === 0;
   else if (draft.contract === 270) success = realized[defender] === 0 && draft.belote === attacker;
-  else success = withBel[attacker] >= draft.contract && withBel[attacker] > withBel[defender];
+  else {
+    const defScore = state.beloteChute ? withBel[defender] : realized[defender];
+    success = withBel[attacker] >= draft.contract && withBel[attacker] > defScore;
+  }
 
   const arrondi = state.arrondi;
   const rnd = x => arrondi ? roundTen(x) : x;
@@ -266,9 +270,9 @@ function renderEnd() {
 }
 
 function restart() {
-  state.rounds = []; state.totalA = 0; state.totalB = 0; state.started = false;
+  state.rounds = []; state.totalA = 0; state.totalB = 0; state.started = true;
   save();
-  showScreen('setup');
+  newRound();
 }
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -290,6 +294,7 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
   document.getElementById('name-b').value = state.nameB || 'Eux';
   document.getElementById('opt-arrondi').checked = !!state.arrondi;
   document.getElementById('opt-belote').checked = !!state.beloteComptee;
+  document.getElementById('opt-belote-chute').checked = state.beloteChute !== false;
   document.getElementById('target').value = state.target || defaultTarget();
   selectMode(state.mode);
 
