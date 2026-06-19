@@ -271,9 +271,9 @@ function renderEnd() {
 }
 
 function restart() {
-  state.rounds = []; state.totalA = 0; state.totalB = 0; state.started = true;
+  state.rounds = []; state.totalA = 0; state.totalB = 0; state.started = false;
   save();
-  newRound();
+  showScreen('setup');
 }
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
