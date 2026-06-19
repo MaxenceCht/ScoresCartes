@@ -21,15 +21,40 @@
         </div>
       </div>
 
+      <!-- Litige en cours -->
+      <div id="pending-litige-banner" style="display:none; background:rgba(216,178,90,0.12); border:1.5px solid var(--gold); border-radius:12px; padding:9px 14px; margin-bottom:14px; font-size:13px; font-weight:700; color:#A07820;">
+        ⚖️ 81 pts en attente du litige précédent
+      </div>
+
+      <!-- Qui a pris -->
       <div class="group">
-        <div class="group-label">Type de manche</div>
+        <div class="group-label">Équipe qui a pris</div>
         <div class="seg-wrap">
-          <button class="seg on" id="kind-normal" onclick="setKind('normal')">Normale</button>
-          <button class="seg" id="kind-capot" onclick="setKind('capot')">Capot · 250</button>
+          <button class="seg" id="taker-a" onclick="selectTaker('a')"></button>
+          <button class="seg" id="taker-b" onclick="selectTaker('b')"></button>
         </div>
       </div>
 
-      <!-- Saisie normale -->
+      <!-- Capot -->
+      <div class="opt-row">
+        <div class="opt-txt">Capot · 250 pts</div>
+        <label class="switch">
+          <input type="checkbox" id="chk-capot" onchange="onCapotChange()" />
+          <span class="track"></span>
+          <span class="thumb"></span>
+        </label>
+      </div>
+
+      <!-- Qui fait capot (visible si capot coché) -->
+      <div class="group" id="capot-block" style="display:none;">
+        <div class="group-label">Quelle équipe fait capot ?</div>
+        <div class="seg-wrap">
+          <button class="seg" id="capot-a" onclick="selectCapot('a')"></button>
+          <button class="seg" id="capot-b" onclick="selectCapot('b')"></button>
+        </div>
+      </div>
+
+      <!-- Points (masqué si capot) -->
       <div id="normal-block">
         <div class="group">
           <div class="group-label">Points réalisés par</div>
@@ -58,15 +83,7 @@
         </div>
       </div>
 
-      <!-- Capot : qui ? -->
-      <div class="group" id="capot-block" style="display:none;">
-        <div class="group-label">Quelle équipe fait capot ?</div>
-        <div class="seg-wrap">
-          <button class="seg" id="capot-a" onclick="selectCapot('a')"></button>
-          <button class="seg" id="capot-b" onclick="selectCapot('b')"></button>
-        </div>
-      </div>
-
+      <!-- Belote / Rebelote -->
       <div class="group">
         <div class="group-label">Belote / Rebelote</div>
         <div class="seg-wrap">
@@ -76,15 +93,7 @@
         </div>
       </div>
 
-      <!-- Litige (apparaît si 81/81) -->
-      <div class="group" id="litige-block" style="display:none;">
-        <div class="group-label" style="color:var(--gold);">⚖️ Litige 81/81 — équipe défendante</div>
-        <div class="seg-wrap">
-          <button class="seg" id="lit-a" onclick="selectLitige('a')"></button>
-          <button class="seg" id="lit-b" onclick="selectLitige('b')"></button>
-        </div>
-      </div>
-
+      <!-- Aperçu + historique -->
       <div class="preview" id="preview">
         <div class="preview-head">
           <span class="kicker">Aperçu</span>
@@ -92,6 +101,7 @@
         </div>
         <div class="preview-line"><span class="preview-name" id="pl-a">Nous</span><span class="preview-delta" id="pd-a">—</span></div>
         <div class="preview-line"><span class="preview-name" id="pl-b">Eux</span><span class="preview-delta" id="pd-b">—</span></div>
+        <div id="mini-history"></div>
       </div>
 
       <div class="err" id="err"></div>
@@ -149,12 +159,7 @@
     </div>
   </div>
 
-  <!-- ÉCRAN CONFIG (accessible depuis scores via roue, optionnel : ici simplifié en bas du 1er écran via modale légère) -->
 </div>
-
-<!-- Config rapide intégrée : noms + objectif. Affichée en superposition simple. -->
-<div id="config-inline" style="display:none;"></div>
-
 <script src="app.js"></script>
 </body>
 </html>
