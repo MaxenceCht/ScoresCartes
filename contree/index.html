@@ -117,7 +117,12 @@
         </div>
       </div>
 
-      <div class="group">
+      <div class="opt-row">
+        <div class="opt-txt">Capot · 250 pts</div>
+        <label class="switch"><input type="checkbox" id="capot-chk" onchange="onCapotChange()" /><span class="track"></span><span class="thumb"></span></label>
+      </div>
+
+      <div class="group" id="group-contract">
         <div class="group-label">Contrat annoncé</div>
         <div class="seg-wrap" id="contract-row"></div>
       </div>
@@ -140,7 +145,7 @@
         </div>
       </div>
 
-      <div class="group">
+      <div class="group" id="group-pts">
         <div class="group-label">Points réalisés par l'annonceur</div>
         <div class="pts-box">
           <div class="pts-main">

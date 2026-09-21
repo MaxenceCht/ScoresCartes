@@ -4,8 +4,7 @@
    ============================================ */
 
 const STORAGE_KEY = 'contree-state-v1';
-const CONTRACTS = [80, 90, 100, 110, 120, 130, 140, 150, 160, 250, 270];
-const CONTRACT_LABELS = { 250: 'Capot', 270: 'Capot beloté' };
+const CONTRACTS = [80, 90, 100, 110, 120, 130, 140, 150, 160];
 const CHUTE_DEFENSE = 160;
 
 let state = {
@@ -19,7 +18,7 @@ let state = {
 };
 let targetManual = false;
 
-let draft = { attacker: null, contract: null, coinche: 1, belote: null, pts: 90 };
+let draft = { attacker: null, contract: null, coinche: 1, belote: null, pts: 90, capot: false };
 
 // ---------- Persistance ----------
 function save() { try { state.targetManual = targetManual; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
@@ -122,14 +121,39 @@ function setPts(v) {
 }
 function bumpPts(d) { setPts(draft.pts + d); }
 function onRange(v) { setPts(v); }
+function onCapotChange() {
+  draft.capot = document.getElementById('capot-chk').checked;
+  document.getElementById('group-contract').style.display = draft.capot ? 'none' : '';
+  document.getElementById('group-pts').style.display = draft.capot ? 'none' : '';
+  refreshPreview();
+}
 
-// ---------- Cœur du calcul (logique préservée) ----------
+// ---------- Cœur du calcul ----------
 function compute() {
-  if (!draft.attacker || !draft.contract) return null;
+  if (!draft.attacker) return null;
   const attacker = draft.attacker;
   const defender = attacker === 'a' ? 'b' : 'a';
+  const n = names();
+  const coincheTxt = draft.coinche === 2 ? ' coinché' : draft.coinche === 4 ? ' surcoinché' : '';
+
+  if (draft.capot) {
+    const score = { a: 0, b: 0 };
+    if (state.mode === 'contrat' || state.mode === 'realise') {
+      score[attacker] = 250 * draft.coinche;
+    } else {
+      score[attacker] = 250 * draft.coinche + 250;
+    }
+    if (state.mode === 'contrat' && draft.belote && state.beloteComptee) {
+      score[draft.belote] += 20;
+    }
+    if ((state.mode === 'mixte' || state.mode === 'realise') && draft.belote) {
+      score[draft.belote] += 20;
+    }
+    return { success: true, isCapot: true, scoreA: score.a, scoreB: score.b, head: n[attacker] + ' · Capot' + coincheTxt };
+  }
+
+  if (!draft.contract) return null;
   const realized = { a: 0, b: 0 };
-  // L'annonceur saisit ses points réalisés
   realized[attacker] = draft.pts;
   realized[defender] = 162 - draft.pts;
 
@@ -138,13 +162,8 @@ function compute() {
     b: realized.b + (draft.belote === 'b' ? 20 : 0)
   };
 
-  let success;
-  if (draft.contract === 250) success = realized[defender] === 0;
-  else if (draft.contract === 270) success = realized[defender] === 0 && draft.belote === attacker;
-  else {
-    const defScore = state.beloteChute ? withBel[defender] : realized[defender];
-    success = withBel[attacker] >= draft.contract && withBel[attacker] > defScore;
-  }
+  const defScore = state.beloteChute ? withBel[defender] : realized[defender];
+  const success = withBel[attacker] >= draft.contract && withBel[attacker] > defScore;
 
   const arrondi = state.arrondi;
   const rnd = x => arrondi ? roundTen(x) : x;
@@ -166,10 +185,7 @@ function compute() {
     }
   }
 
-  const n = names();
-  const coincheTxt = draft.coinche === 2 ? ' coinché' : draft.coinche === 4 ? ' surcoinché' : '';
-  const contractTxt = CONTRACT_LABELS[draft.contract] || draft.contract;
-  const head = n[attacker] + ' · ' + contractTxt + coincheTxt;
+  const head = n[attacker] + ' · ' + draft.contract + coincheTxt;
   return { success, scoreA: score.a, scoreB: score.b, head };
 }
 
@@ -186,7 +202,7 @@ function refreshPreview() {
     document.getElementById('pd-b').textContent = '—';
     return;
   }
-  stateEl.textContent = res.success ? 'Contrat tenu' : 'Chute';
+  stateEl.textContent = res.isCapot ? 'Capot' : (res.success ? 'Contrat tenu' : 'Chute');
   stateEl.style.color = res.success ? 'var(--ok)' : 'var(--bad)';
   setDelta('pd-a', res.scoreA);
   setDelta('pd-b', res.scoreB);
@@ -202,26 +218,26 @@ function validateRound() {
   const err = document.getElementById('err');
   err.textContent = '';
   if (!draft.attacker) { err.textContent = "Désigne l'équipe qui annonce."; return; }
-  if (!draft.contract) { err.textContent = 'Choisis le contrat.'; return; }
-  if (draft.contract === 270 && draft.belote !== draft.attacker) {
-    err.textContent = "Capot beloté : l'annonceur doit avoir la belote."; return;
-  }
+  if (!draft.capot && !draft.contract) { err.textContent = 'Choisis le contrat.'; return; }
   const res = compute();
   state.totalA += res.scoreA;
   state.totalB += res.scoreB;
-  state.rounds.push({ scoreA: res.scoreA, scoreB: res.scoreB, totalA: state.totalA, totalB: state.totalB, head: res.head, success: res.success });
+  state.rounds.push({ scoreA: res.scoreA, scoreB: res.scoreB, totalA: state.totalA, totalB: state.totalB, head: res.head, success: res.success, isCapot: res.isCapot || false });
   save();
   renderScores();
   newRound();
 }
 
 function newRound() {
-  draft = { attacker: null, contract: null, coinche: 1, belote: null, pts: 90 };
+  draft = { attacker: null, contract: null, coinche: 1, belote: null, pts: 90, capot: false };
   const n = names();
   document.getElementById('att-a').className = 'seg';
   document.getElementById('att-a').textContent = n.a;
   document.getElementById('att-b').className = 'seg';
   document.getElementById('att-b').textContent = n.b;
+  document.getElementById('capot-chk').checked = false;
+  document.getElementById('group-contract').style.display = '';
+  document.getElementById('group-pts').style.display = '';
   document.querySelectorAll('#contract-row .seg').forEach(c => c.className = 'seg');
   selectCoinche(1);
   selectBelote(null);
@@ -254,7 +270,7 @@ function renderScores() {
     empty.style.display = 'none';
     hist.innerHTML = [...state.rounds].reverse().map((r, ri) => {
       const i = state.rounds.length - 1 - ri;
-      return `<div class="histo-item"><span class="histo-n">${i + 1}</span><div class="histo-body"><div class="histo-head">${r.success ? '' : '✗ '}${esc(r.head || '')}</div><div class="histo-sub">${r.success ? 'Contrat tenu' : 'Chute'}</div></div><div class="histo-chips"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreA}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalA}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreB}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalB}</span></div></div></div>`;
+      return `<div class="histo-item"><span class="histo-n">${i + 1}</span><div class="histo-body"><div class="histo-head">${r.success ? '' : '✗ '}${esc(r.head || '')}</div><div class="histo-sub">${r.isCapot ? 'Capot' : (r.success ? 'Contrat tenu' : 'Chute')}</div></div><div class="histo-chips"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreA > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreA}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalA}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="histo-chip ${r.scoreB > 0 ? 'delta-pos' : 'delta-zero'}">+${r.scoreB}</span><span style="font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">${r.totalB}</span></div></div></div>`;
     }).join('');
   }
   const reached = state.target > 0 && (state.totalA >= state.target || state.totalB >= state.target);
@@ -284,7 +300,7 @@ function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').
   CONTRACTS.forEach(v => {
     const b = document.createElement('button');
     b.className = 'seg'; b.dataset.val = v;
-    b.textContent = CONTRACT_LABELS[v] || v;
+    b.textContent = v;
     b.style.minWidth = '52px';
     b.onclick = () => selectContract(v);
     row.appendChild(b);
